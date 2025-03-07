@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import time
 
 from okx.websocket.WebSocketFactory import WebSocketFactory
 
@@ -20,6 +21,8 @@ class WsPublicAsync:
 
     async def consume(self):
         async for message in self.websocket:
+            # if 'pong' == message:
+            #     logger.info('recv pong')
             logger.debug("Received message: {%s}", message)
             if self.callback:
                 self.callback(message)
@@ -53,3 +56,9 @@ class WsPublicAsync:
 
     def stop_sync(self):
         self.loop.run_until_complete(self.stop())
+    
+    async def keep_send_ping(self):
+        interval = 20
+        while not self.websocket.closed:
+            await self.websocket.send('ping')
+            await asyncio.sleep(interval)
