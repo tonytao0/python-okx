@@ -4,6 +4,7 @@ import logging
 
 from okx.websocket import WsUtils
 from okx.websocket.WebSocketFactory import WebSocketFactory
+from websockets.exceptions import ConnectionClosedError
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,18 @@ class WsPrivateAsync:
         self.websocket = await self.factory.connect()
 
     async def consume(self):
-        async for message in self.websocket:
-            logger.debug("Received message: {%s}", message)
-            if self.callback:
-                self.callback(message)
+        try:
+            async for message in self.websocket:
+                # if 'pong' == message:
+                #     logger.info('recv pong')
+                logger.debug("Received message: {%s}", message)
+                if self.callback:
+                    self.callback(message)
+        except ConnectionClosedError as e:
+            logger.error(f"WebSocket connection closed unexpectedly: {e}.")
+            await self.connect()
+        except Exception as e:
+            logger.error(f"consume() Exception: {e}.")
 
     async def subscribe(self, params: list, callback):
         self.callback = callback
@@ -74,3 +83,8 @@ class WsPrivateAsync:
 
     def stop_sync(self):
         self.loop.run_until_complete(self.stop())
+    
+    async def keep_send_ping(self):
+        while not self.websocket.closed:
+            await self.websocket.send('ping')
+            await asyncio.sleep(20)

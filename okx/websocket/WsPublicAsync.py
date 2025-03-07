@@ -64,7 +64,6 @@ class WsPublicAsync:
         self.loop.run_until_complete(self.stop())
     
     async def keep_send_ping(self):
-        interval = 20
         while not self.websocket.closed:
             await self.websocket.send('ping')
-            await asyncio.sleep(interval)
+            await asyncio.sleep(20)
