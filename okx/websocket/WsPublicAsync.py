@@ -4,9 +4,9 @@ import logging
 import time
 
 from okx.websocket.WebSocketFactory import WebSocketFactory
+from websockets.exceptions import ConnectionClosedError
 
 logger = logging.getLogger(__name__)
-
 
 class WsPublicAsync:
     def __init__(self, url):
@@ -20,12 +20,18 @@ class WsPublicAsync:
         self.websocket = await self.factory.connect()
 
     async def consume(self):
-        async for message in self.websocket:
-            # if 'pong' == message:
-            #     logger.info('recv pong')
-            logger.debug("Received message: {%s}", message)
-            if self.callback:
-                self.callback(message)
+        try:
+            async for message in self.websocket:
+                # if 'pong' == message:
+                #     logger.info('recv pong')
+                logger.debug("Received message: {%s}", message)
+                if self.callback:
+                    self.callback(message)
+        except ConnectionClosedError as e:
+            logger.error(f"WebSocket connection closed unexpectedly: {e}.")
+            await self.connect()
+        except Exception as e:
+            logger.error(f"consume() Exception: {e}.")
 
     async def subscribe(self, params: list, callback):
         self.callback = callback
