@@ -5,6 +5,7 @@ import logging
 from okx.websocket import WsUtils
 from okx.websocket.WebSocketFactory import WebSocketFactory
 from websockets.exceptions import ConnectionClosedError
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class WsPrivateAsync:
                 if self.callback:
                     self.callback(message)
         except ConnectionClosedError as e:
-            logger.error(f"WebSocket connection closed unexpectedly: {e}.")
+            logger.error(f"WebSocket connection closed unexpectedly: {e}.time:{datetime.now()}")
             await self.connect()
         except Exception as e:
             logger.error(f"consume() Exception: {e}.")
