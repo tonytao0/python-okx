@@ -4,7 +4,7 @@ import ssl
 
 import certifi
 import websockets
-from websockets.asyncio.client import connect
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ class WebSocketFactory:
         # PROXY_URL = "http://127.0.0.1:10808"
         try:
             if self.proxy:
+                from websockets.asyncio.client import connect
                 self.websocket = await websockets.connect(self.url, ssl=ssl_context)
                 self.websocket = await connect(
                     self.url,
