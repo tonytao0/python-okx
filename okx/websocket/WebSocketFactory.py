@@ -22,17 +22,22 @@ class WebSocketFactory:
         ssl_context.load_verify_locations(certifi.where())
         # PROXY_URL = "http://127.0.0.1:10808"
         try:
-            self.websocket = await websockets.connect(self.url, ssl=ssl_context)
-            self.websocket = await connect(
-                self.url,
-                ssl=ssl_context,
-                proxy=self.proxy,
-                ping_interval=None,
-                ping_timeout=None,
-                max_queue=None
-            )
-            logger.info("WebSocket connection established.")
-            return self.websocket
+            if self.proxy:
+                self.websocket = await websockets.connect(self.url, ssl=ssl_context)
+                self.websocket = await connect(
+                    self.url,
+                    ssl=ssl_context,
+                    proxy=self.proxy,
+                    ping_interval=None,
+                    ping_timeout=None,
+                    max_queue=None
+                )
+                logger.info("WebSocket connection established.")
+                return self.websocket
+            else:
+                self.websocket = await websockets.connect(self.url, ssl=ssl_context)
+                logger.info("WebSocket connection established.")
+                return self.websocket
         except Exception as e:
             logger.error(f"Error connecting to WebSocket: {e}")
             return None
